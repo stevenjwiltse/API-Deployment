@@ -15,55 +15,59 @@ services:
             - ./keycloak/realm-config.json:/opt/keycloak/data/import/realm-config.json
             - ./keycloak/themes:/opt/keycloak/providers/
         command: ["start-dev", "--import-realm", "--spi-theme-static-max-age=-1", "--spi-theme-cache-themes=false", "--spi-theme-cache-templates=false"]
+        networks:
+            - barber-shop-network 
 
     db:
         image: mysql:latest
-        hostname: barbershop
+        hostname: db  
         restart: always
+        env_file:
+            - .env
         environment:
             MYSQL_ROOT_PASSWORD: password
             MYSQL_DATABASE: barbershop
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: password
         ports:
             - "3306:3306"
         healthcheck:
-            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
             interval: 10s
             timeout: 10s
             retries: 5
-        env_file:
-            - .env
-        # volumes:
-        #     - ./db-dump:/docker-entrypoint-initdb.d
-    
+        networks:
+            barber-shop-network:
+                aliases:
+                    - db  
+
     phpmyadmin:
         image: phpmyadmin:latest
         depends_on:
             - db
         ports:
             - 8082:80
+        env_file:
+            - .env
         environment:
             - PMA_HOST=${MYSQL_HOST}
             - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-        
+        networks:
+            - barber-shop-network 
+
     api:
-        image: python:3.12
+        build: .
         hostname: barber-shop-api
         restart: always
         depends_on:
-            db:
-                condition: service_healthy
-                restart: true
+            - db
         ports:
-            - 8000:8000
-        expose:
-            - 8000:8000
-        working_dir:
-            /app
-        volumes:
-            - ./:/app
+            - "8000:8000"
         env_file:
             - .env
-        command: sh scripts/start.sh
+        networks:
+            - barber-shop-network
+
 
     smtp:
         image: gessnerfl/fake-smtp-server:latest
@@ -71,9 +75,11 @@ services:
         env_file:
             - .env
         ports:
-        - "8125:8025" #expose smtp port
-        - "8180:8080" #expose web ui
-        - "8181:8081" #expose management api
+            - "8125:8025"
+            - "8180:8080"
+            - "8181:8081"
+        networks:
+            - barber-shop-network  
+
 networks:
     barber-shop-network:
-        external: true
