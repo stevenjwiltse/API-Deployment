@@ -990,15 +990,18 @@
       "redirectUris": [
         "http://localhost:5173/*",
         "http://localhost:5173",
-        "http://18.220.221.175:/*",
+        "http://18.220.221.175/*",
         "http://18.220.221.175",
         "http://barbershop-app.duckdns.org/*",
-        "http://barbershop-app.duckdns.org"
+        "http://barbershop-app.duckdns.org",
+        "https://barbershop.duckdns.org/*",
+        "https://barbershop.duckdns.org"
       ],
       "webOrigins": [
         "http://localhost:5173",
         "http://18.220.221.175",
-        "http://barbershop-app.duckdns.org"
+        "http://barbershop-app.duckdns.org",
+        "https://barbershop.duckdns.org"
       ],
       "notBefore": 0,
       "bearerOnly": false,

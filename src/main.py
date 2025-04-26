@@ -32,19 +32,20 @@ app = FastAPI(lifespan=lifespan)
 # Initialize the HTTPBearer scheme for authentication
 bearer_scheme = HTTPBearer()
 
-origins = [
-    "http://18.220.221.175:5173",  # Frontend origin
-]
+# In your config loading
+cors_origins = settings.get_config()["backend_cors_origins"]
+if isinstance(cors_origins, str):
+    cors_origins = [origin.strip() for origin in cors_origins.split(",")]
 
-# Middleware configuration for Frontend-Backend communication
+# Then use it
 app.add_middleware(
     CORSMiddleware,
-
-    allow_origins=settings.get_config()["backend_cors_origins"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
+
 
 
 # Connect routers
